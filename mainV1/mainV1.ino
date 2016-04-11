@@ -62,7 +62,17 @@ class Note
           note+=82;
           break;
       }
+      switch (n[2])
+      {
+        case 'F':
+          note-=1;
+          break;
+        case 'S':
+          note+=1;
+      }
       duration=d;
+      Serial.println(note);
+      Serial.println(duration);
     }
     void calcNote()
     {
@@ -70,36 +80,25 @@ class Note
     }
     void play()
     {
-      
       tone(buzzerPin,frequency,duration);
-      
     }
 };
 
 void setup() {
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
   Serial.begin(9600);
 }
 
-char NoteValueString[3];
+char noteValueString[3];
 int noteDuration;
 
-void loop() {
-  getNoteValue();
-  Note n(NoteValueString,10000);
-  n.calcNote();
-  n.play();
-}
-
-void getNoteValue();
+void getNoteValue()
 {
   int i=0;
   while (i<3)
   {
     if(Serial.available()>0)
     {
-      NoteValueString[i]=(char)Serial.read();
+      noteValueString[i]=(char)Serial.read();
       i++;
     }
   }
@@ -107,19 +106,24 @@ void getNoteValue();
 
 void getNoteDuration()
 {
-  char NoteDurationS[4];
-  int i=0;
-  while (i<4)
+  noteDuration=0;
+  boolean aquiredInt=true;
+  while(aquiredInt)
   {
     if(Serial.available()>0)
     {
-      char d=(char)Serial.read();
-      if(d!='.')
-      {
-        NoteDurationS[i]=d;
-        i++;
-      }
+      noteDuration=Serial.parseInt();
+      aquiredInt=false;
     }
   }
-  
 }
+
+void loop() {
+  getNoteValue();
+  getNoteDuration();
+  Note n(noteValueString,noteDuration);
+  n.calcNote();
+  n.play();
+}
+
+
